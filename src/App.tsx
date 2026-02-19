@@ -16,7 +16,7 @@ import GameArena from './components/GameArena';
 import Store from './pages/Store';
 import Squad from './pages/Squad';
 import Profile from './pages/Profile';
-import Wiki from './components/Wiki';
+import Wiki from './components/wiki';
 import BottomNav from './components/BottomNav';
 
 // مكون داخلي للتعامل مع التوجيه بناءً على حالة المستخدم والروابط العميقة

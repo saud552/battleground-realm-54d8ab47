@@ -35,17 +35,17 @@ const HomeScreen = () => {
       <div className="flex items-center justify-between p-4 border-b border-white/10 bg-slate-900/50 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-kilegram-blue to-kill-red flex items-center justify-center text-xl">
-            {user.avatar}
+            {user?.photoUrl || '👤'}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold">{user.username}</span>
+              <span className="font-semibold">{user?.username}</span>
               <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-gray-300">
-                ID: {user.id}
+                ID: {user?.id}
               </span>
             </div>
             <div className="flex items-center gap-1 text-sm text-gray-400">
-              <span>{user.country}</span>
+              <span>{user?.country}</span>
               <span>Yemen</span>
             </div>
           </div>
