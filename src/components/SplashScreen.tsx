@@ -1,51 +1,68 @@
 import { motion } from 'framer-motion'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface SplashScreenProps {
   onFinish: () => void
 }
 
 const SplashScreen = ({ onFinish }: SplashScreenProps) => {
+  const [progress, setProgress] = useState(0)
+
   useEffect(() => {
-    const timer = setTimeout(onFinish, 3000) // 3 ثوانٍ
-    return () => clearTimeout(timer)
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          setTimeout(onFinish, 300)
+          return 100
+        }
+        return prev + Math.random() * 15 + 5
+      })
+    }, 200)
+    return () => clearInterval(interval)
   }, [onFinish])
 
   return (
-    <div className="fixed inset-0 bg-slate-950 flex items-center justify-center z-50">
-      <div className="relative">
-        {/* خلفية شبكية */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#00a6ff10_1px,transparent_1px),linear-gradient(to_bottom,#00a6ff10_1px,transparent_1px)] bg-[size:40px_40px]" />
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative text-center"
+    <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50">
+      {/* Grid background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.05)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="relative text-center z-10"
+      >
+        {/* Logo */}
+        <h1 className="text-6xl font-black tracking-tighter text-gradient-primary">
+          KILEGRAM
+        </h1>
+
+        {/* Tagline */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-muted-foreground mt-3 text-xs tracking-[0.3em] uppercase"
         >
-          <motion.h1
-            animate={{ textShadow: ['0 0 10px #00a6ff', '0 0 30px #ff3b3b', '0 0 10px #00a6ff'] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-7xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-kilegram-blue via-white to-kill-red"
-          >
-            KILEGRAM
-          </motion.h1>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: '100%' }}
-            transition={{ duration: 1.5, delay: 0.5 }}
-            className="h-1 bg-gradient-to-r from-kilegram-blue to-kill-red mt-4"
-          />
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-            className="text-gray-400 mt-4 text-sm tracking-widest"
-          >
-            ENTER THE BATTLEFIELD
-          </motion.p>
-        </motion.div>
-      </div>
+          Enter The Battlefield
+        </motion.p>
+
+        {/* Loading bar */}
+        <div className="mt-8 w-48 mx-auto">
+          <div className="bg-muted rounded-full h-1.5 overflow-hidden">
+            <motion.div
+              className="h-full rounded-full gradient-primary"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(progress, 100)}%` }}
+              transition={{ duration: 0.2 }}
+            />
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            {progress < 100 ? 'جارٍ التحميل...' : 'جاهز!'}
+          </p>
+        </div>
+      </motion.div>
     </div>
   )
 }
