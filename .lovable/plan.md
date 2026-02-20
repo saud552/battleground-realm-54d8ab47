@@ -1,116 +1,69 @@
 
 
-# Kilegram Alpha — Visual Store & Armory Build Plan
+# Kilegram Alpha — Development Plan
 
 ## Overview
-Build the polished Visual Store, Armory, and core UI shell for Kilegram — a 3D top-down Battle Royale Telegram Mini App. All weapons, characters, and gear will be rendered as detailed procedural 3D models using React Three Fiber, styled to match the military/tactical aesthetic of the reference art.
+Continue development of Kilegram, a 3D Top-Down Battle Royale Telegram Mini App. The project already has solid foundations: procedural 3D models for all 4 characters and 5 weapons, a game registry with the official roster, store UI with tabs, admin dashboard, and Supabase integration. The focus now is on **upgrading the 3D visuals, loading the GLB reference models, polishing the store/armory, syncing inventory with the database, and enhancing the admin panel**.
 
 ---
 
-## Phase 1: Foundation & Database Schema
+## Phase 1: Load GLB 3D Models from Reference Files
+Replace the current procedural box-geometry models with the actual `.glb` files already in the repository.
 
-### Supabase Schema Migration
-- Create/update the **profiles** table with fields: `telegram_id`, `username`, `first_name`, `level`, `xp`, `k_coins`, `k_gems`, `selected_skin`, `selected_weapon`, `total_kills`, `total_wins`, `total_matches`, `is_banned`
-- Create **inventory** table: `user_id`, `item_id`, `item_type` (skin/weapon/helmet/backpack), `item_name`, `skin_level`, `is_equipped`, `acquired_at`
-- Create **game_events** table for admin news pushes
-- Create **match_history** table for stats tracking
-- Create **user_roles** table with `admin`/`player` roles
-- Add a new ammo type `7.62mm` for AK-Death
-- Set up Row Level Security (RLS) policies for all tables
+- **Weapon Models**: Map each official weapon to its closest GLB reference file:
+  - `K416` → `rifle__m4a1-s_weapon_model_cs2.glb`
+  - `AK-Death` → `ak-47disassembly_of_weapons.glb`
+  - `AWM-X` → `rifle__awp_weapon_model_cs2.glb`
+  - `Vector-Neon` → `animated_pp-19-01.glb`
+  - `S12-Breacher` → `shotgun_mr-133_animated.glb`
 
-### Game Data Registry
-- Define the official item catalog in code:
-  - **Characters:** Ghost Riley, Nova Prime, Viper Snake, Shadow Exe — each with unique color palette, armor style, and skin levels 1-5
-  - **Weapons:** K416 (5.56mm), AK-Death (7.62mm), AWM-X (.300 Mag), Vector-Neon (9mm), S12-Breacher (12 Gauge) — each with damage, fire rate, magazine, reload stats
-  - **Helmets:** Recon Cap, Tactical Ops, Titanium Juggernaut — with armor values
-  - **Backpacks:** Light Scout, Commando, Elite Expedition — with capacity values
+- **Character Models**: Map each character to a GLB reference:
+  - `Ghost Riley` → `snake_eyes__fortnite_item_shop_skin.glb`
+  - `Nova Prime` → `fortnite_oblivion_skin.glb`
+  - `Viper Snake` → `torin__fortnite_chapter_2_season_8_bp_skin.glb`
+  - `Shadow Exe` → `the_omega_tier_100_skin_fortnite_3d_model.glb`
 
----
+- Use `@react-three/drei`'s `useGLTF` to load models with proper positioning, scaling, and auto-rotation in the store viewer
+- Add loading fallback (the existing procedural models serve as fallback if GLB fails to load)
 
-## Phase 2: Procedural 3D Models (React Three Fiber)
+## Phase 2: Polished Visual Store & Armory
+Upgrade the store UI to feel premium and match a AAA mobile game store experience.
 
-### Character Models
-Build 4 unique procedural 3D character models using R3F primitives:
-- **Ghost Riley** — Dark tactical operator with skull-motif visor, heavy armor plating, muted blacks/greys
-- **Nova Prime** — Sleek futuristic soldier with glowing cyan accents, streamlined armor
-- **Viper Snake** — Agile stealth operative with green/dark camo tones, slim profile
-- **Shadow Exe** — Digital warfare specialist with purple/neon highlights, angular armor
+- **Characters Tab**: Full-card layout with GLB model rotating in a 3D viewer, rarity glow effects, character name/description, and purchase/equip buttons
+- **Weapons Tab**: Horizontal card with 3D weapon preview, stat bars (damage, fire rate, range), ammo type badge, expand for full details
+- **Gear Tab (Helmets & Backpacks)**: Enhanced 3D gear previews with armor/capacity stats and rarity styling
+- **Loot Crate Models**: Use the `weapon_crate_loot_crate.glb` and `futuristic_crate_-_animated.glb` for crate visuals in store or arena
 
-Each character built from capsules, cylinders, and custom shapes with emissive materials for skin levels 1-5.
+## Phase 3: Inventory System (Database Sync)
+Connect the store purchases to the Supabase `inventory` table properly.
 
-### Weapon Models
-Build 5 detailed procedural 3D weapon models:
-- **K416** — Compact assault rifle with rail system, foregrip, red-dot sight
-- **AK-Death** — Heavy assault rifle with curved magazine, wooden/black finish, menacing profile
-- **AWM-X** — Long bolt-action sniper with scope, bipod, heavy barrel
-- **Vector-Neon** — Compact SMG with neon-accented body, folding stock
-- **S12-Breacher** — Bulky tactical shotgun with drum magazine, wide barrel
+- **On Purchase**: Insert item into `inventory` table with correct `item_type` (skin, weapon, helmet, backpack), `item_id`, and `item_name`
+- **On Load**: Fetch player's inventory from Supabase and display owned/equipped status accurately in store
+- **Equip System**: Update `is_equipped` flag in inventory, ensure only one item per type is equipped at a time
+- **Update `weapons.ts`**: Sync the old weapon system IDs (`m4_tech`, `viper_smg`, etc.) to the new official roster IDs (`k416`, `ak_death`, etc.)
+- Add `7.62mm` ammo type to the weapon state system (currently missing, only has 5.56mm, 9mm, .300mag, 12gauge)
 
-### Gear Models
-- 3 helmet models with increasing bulk/protection visuals
-- 3 backpack models with size progression
+## Phase 4: Arena Loot Visual Upgrade
+Make in-game loot drops visually match the store items.
 
----
+- Replace the generic colored boxes in `Loot3D.tsx` with miniature weapon/gear GLB models or distinct styled meshes per weapon type
+- Weapon loot shows a small rotating version of the actual weapon model
+- Ammo crate loot uses the `soviet_weapons_ammo_crate_box_animated_low_poly.glb` model
+- Medkit and armor drops get unique visual treatments
 
-## Phase 3: Visual Store & Armory UI
+## Phase 5: Admin Panel Enhancement
+Expand the existing admin dashboard at `/admin`.
 
-### Store Page (`/store`)
-- Premium dark UI with military/gaming aesthetic (dark slate, neon accents)
-- **Tab navigation:** Characters | Weapons | Gear
-- Each item displayed as an interactive 3D card — the procedural model rotates on a lit platform
-- Item details panel: name, stats, price (K-Coins / K-Gems), rarity tier
-- "Buy" and "Equip" buttons with animated feedback
-- Player's current K-Coins and K-Gems balance displayed in header
-- Items already owned shown with "Owned" badge and "Equip" action
-
-### Armory Page (loadout view within Store)
-- Shows currently equipped character, weapon, helmet, and backpack side by side
-- 3D preview of full loadout on a turntable
-- Quick-swap slots to change equipped items from owned inventory
-- Stats comparison when hovering alternative items
-
-### Store Item Detail Modal
-- Full-screen 3D model viewer with orbit controls
-- Weapon stats radar chart (damage, fire rate, range, accuracy, magazine)
-- Character ability/lore description
-- Purchase confirmation flow
+- **News/Events Publisher**: Already functional — polish the UI with better form styling and preview capability
+- **Player Management**: Add ability to grant gems (not just coins), reset player stats, and view player inventory
+- **Game Stats Dashboard**: Add charts/graphs for daily active users, matches played, revenue tracking
+- **Push Notifications**: Prepare event system so published news appears on the home screen for all players
 
 ---
 
-## Phase 4: App Shell & Navigation
-
-### Main Layout
-- **Splash Screen** — Kilegram logo with animated entrance
-- **Home Screen** — Play button, current rank/level, active events banner
-- **Bottom Navigation** — Home, Store, Squad, Profile tabs
-- **Profile Page** — Player stats, match history, level progression bar
-- **Squad Page** — Create/join squad with squad code
-
-### Telegram Mini App Integration
-- Authenticate using `window.Telegram.WebApp` context
-- Extract user data (telegram_id, first_name, username, photo_url)
-- Auto-create profile on first visit
-- Haptic feedback on purchases and actions
-
----
-
-## Phase 5: Admin Dashboard (`/admin`)
-
-- Protected route (only users with `admin` role)
-- **Player Management** — Search, view, ban/unban players, adjust K-Coins/K-Gems
-- **News/Events** — Create and push game events/announcements
-- **Stats Overview** — Total players, active matches, revenue metrics
-- Simple table-based UI with action buttons
-
----
-
-## What This Plan Delivers
-By the end of implementation, you'll have:
-1. A fully functional Supabase backend with the complete item catalog
-2. 12+ unique procedural 3D models (4 characters, 5 weapons, 3 helmets, 3 backpacks)
-3. A polished Visual Store where every item is displayed as its specific 3D model
-4. An Armory/loadout system with equip functionality
-5. Full app navigation shell ready for the Game Arena phase
-6. Admin panel for player and content management
-7. Telegram Mini App authentication
+## Technical Notes
+- All GLB models are already in the repository under `Models/` — no external downloads needed
+- The Supabase schema already has `inventory`, `profiles`, `game_events`, `user_roles` tables with correct structure
+- The `item_type` enum already supports: `skin`, `weapon`, `helmet`, `armor`, `backpack`
+- No schema migration needed — existing tables cover the requirements
 
