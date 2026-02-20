@@ -5,6 +5,7 @@ import { useSquad } from '../context/SquadContext'
 import { motion } from 'framer-motion'
 import { Users, QrCode, Skull, Trophy, Coins } from 'lucide-react'
 import JoinModal from './JoinModal'
+import XPProgressBar from './XPProgressBar'
 
 const HomeScreen = () => {
   const { user } = useAuth()
@@ -44,13 +45,18 @@ const HomeScreen = () => {
                 ID: {user?.id}
               </span>
             </div>
-            <div className="flex items-center gap-1 text-sm text-gray-400">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span>{user?.country}</span>
               <span>Yemen</span>
             </div>
           </div>
         </div>
-        <div className="text-xs text-gray-400">Online</div>
+        <div className="text-xs text-muted-foreground">Online</div>
+      </div>
+
+      {/* XP Progress */}
+      <div className="px-4 pt-3">
+        <XPProgressBar xp={user?.xp ?? 0} level={user?.level ?? 1} />
       </div>
 
       {/* المحتوى الرئيسي */}
@@ -103,18 +109,18 @@ const HomeScreen = () => {
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
               <Skull className="w-6 h-6 mx-auto text-kill-red mb-1" />
-              <div className="text-xl font-bold">0</div>
-              <div className="text-xs text-gray-400">Kills</div>
+            <div className="text-xl font-bold">{user?.totalKills ?? 0}</div>
+              <div className="text-xs text-muted-foreground">Kills</div>
             </div>
             <div className="text-center">
-              <Trophy className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
-              <div className="text-xl font-bold">0</div>
-              <div className="text-xs text-gray-400">Wins</div>
+              <Trophy className="w-6 h-6 mx-auto text-gold mb-1" />
+              <div className="text-xl font-bold">{user?.totalWins ?? 0}</div>
+              <div className="text-xs text-muted-foreground">Wins</div>
             </div>
             <div className="text-center">
               <Coins className="w-6 h-6 mx-auto text-kilegram-blue mb-1" />
-              <div className="text-xl font-bold">500</div>
-              <div className="text-xs text-gray-400">Coins</div>
+              <div className="text-xl font-bold">{user?.coins ?? 0}</div>
+              <div className="text-xs text-muted-foreground">Coins</div>
             </div>
           </div>
         </motion.div>

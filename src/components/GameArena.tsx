@@ -68,6 +68,8 @@ const GameArena = () => {
         localHealth={gameState.localHealth}
         armor={gameState.armor}
         isDead={gameState.isDead}
+        xp={user?.xp ?? 0}
+        level={user?.level ?? 1}
         weaponDisplay={gameState.weaponDisplay}
         weaponSystem={gameState.weaponSystem.current}
         showWeaponSelector={showWeaponSelector}

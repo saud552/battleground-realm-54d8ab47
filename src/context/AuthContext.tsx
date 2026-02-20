@@ -249,8 +249,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const addXP = async (amount: number) => {
     if (!user) return;
+    const { levelFromXP } = await import('@/lib/xpSystem');
     const newXP = user.xp + amount;
-    const newLevel = Math.floor(Math.sqrt(newXP / 50)) + 1;
+    const newLevel = levelFromXP(newXP);
     await updateUser({ xp: newXP, level: newLevel });
   };
 

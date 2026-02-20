@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { WEAPONS } from '@/lib/weapons';
 import { WeaponSystem } from '@/lib/WeaponSystem';
+import XPProgressBar from '@/components/XPProgressBar';
 
 const WEAPON_LIST = Object.values(WEAPONS);
 
@@ -10,6 +11,8 @@ interface GameHUDProps {
   localHealth: number;
   armor: number;
   isDead: boolean;
+  xp: number;
+  level: number;
   weaponDisplay: ReturnType<WeaponSystem['getDisplayState']>;
   weaponSystem: WeaponSystem;
   showWeaponSelector: boolean;
@@ -20,7 +23,7 @@ interface GameHUDProps {
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({
-  kills, localHealth, armor, isDead, weaponDisplay, weaponSystem: ws,
+  kills, localHealth, armor, isDead, xp, level, weaponDisplay, weaponSystem: ws,
   showWeaponSelector, setShowWeaponSelector, onSwitchWeapon, onReload, onBack,
 }) => {
   return (
@@ -33,9 +36,14 @@ const GameHUD: React.FC<GameHUDProps> = ({
         <ArrowLeft size={20} />
       </button>
 
-      {/* Kills */}
-      <div className="absolute top-4 right-4 z-20 bg-card/80 px-3 py-1.5 rounded-lg border border-border text-foreground text-sm font-mono">
-        💀 {kills}
+      {/* Kills + XP */}
+      <div className="absolute top-4 right-4 z-20 flex flex-col gap-1 items-end">
+        <div className="bg-card/80 px-3 py-1.5 rounded-lg border border-border text-foreground text-sm font-mono">
+          💀 {kills}
+        </div>
+        <div className="bg-card/80 px-3 py-1 rounded-lg border border-border w-28">
+          <XPProgressBar xp={xp} level={level} compact />
+        </div>
       </div>
 
       {/* Health & Armor */}

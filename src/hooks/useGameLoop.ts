@@ -5,6 +5,7 @@ import { hapticImpact } from '@/lib/telegram';
 import {
   WEAPONS, LootItem, LootType, LOOT_CONFIGS, AmmoType,
 } from '@/lib/weapons';
+import { XP_REWARDS } from '@/lib/xpSystem';
 import { RemotePlayer } from './useBroadcast';
 
 // Constants
@@ -137,7 +138,7 @@ export function useGameLoop(params: UseGameLoopParams) {
 
   const handleKill = useCallback(() => {
     addCoins(10);
-    addXP(20);
+    addXP(XP_REWARDS.kill);
     setKills(prev => prev + 1);
   }, [addCoins, addXP]);
 

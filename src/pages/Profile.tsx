@@ -6,6 +6,7 @@
 import React from 'react'
 import { useAuth, AVAILABLE_SKINS } from '../context/AuthContext'
 import { Coins, Skull, Trophy } from 'lucide-react'
+import XPProgressBar from '@/components/XPProgressBar'
 
 const Profile = () => {
   const { user } = useAuth()
@@ -31,6 +32,11 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* XP & Level */}
+      <div className="mb-6">
+        <XPProgressBar xp={user.xp} level={user.level} />
+      </div>
+
       {/* الشخصية المختارة */}
       <div className="bg-slate-900 rounded-xl p-4 border border-white/10 mb-6">
         <h2 className="text-lg font-semibold mb-3">الشخصية المختارة</h2>
@@ -51,13 +57,13 @@ const Profile = () => {
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <Skull className="w-8 h-8 mx-auto text-kill-red mb-2" />
-            <div className="text-2xl font-bold">0</div>
-            <div className="text-xs text-gray-400">قتلى</div>
+            <div className="text-2xl font-bold">{user.totalKills}</div>
+            <div className="text-xs text-muted-foreground">قتلى</div>
           </div>
           <div className="text-center">
-            <Trophy className="w-8 h-8 mx-auto text-yellow-500 mb-2" />
-            <div className="text-2xl font-bold">0</div>
-            <div className="text-xs text-gray-400">فوز</div>
+            <Trophy className="w-8 h-8 mx-auto text-gold mb-2" />
+            <div className="text-2xl font-bold">{user.totalWins}</div>
+            <div className="text-xs text-muted-foreground">فوز</div>
           </div>
           <div className="text-center">
             <Coins className="w-8 h-8 mx-auto text-kilegram-blue mb-2" />
