@@ -1,10 +1,10 @@
 // ============================================
-// 3D Weapon Models — GLB with Procedural Fallback
+// 3D Weapon Models — GLB with auto-centering
 // ============================================
 
 import React, { useRef, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Center } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface WeaponModelProps {
@@ -13,7 +13,6 @@ interface WeaponModelProps {
   scale?: number;
 }
 
-// GLB file mapping — all weapons
 const WEAPON_GLB_MAP: Record<string, string> = {
   k416: '/Models/weapons/rifle__m4a1-s_weapon_model_cs2.glb',
   ak_death: '/Models/weapons/ak-47disassembly_of_weapons.glb',
@@ -32,58 +31,37 @@ const WEAPON_GLB_MAP: Record<string, string> = {
   colt_m1911: '/Models/weapons/colt_pistol_m1911a1_game_asset.glb',
 };
 
-// GLB scale/offset tuning per weapon
-const WEAPON_GLB_CONFIG: Record<string, { scale: number; position: [number, number, number]; rotation: [number, number, number] }> = {
-  k416: { scale: 2.5, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  ak_death: { scale: 2.5, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  awm_x: { scale: 2.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  vector_neon: { scale: 3.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  s12_breacher: { scale: 2.5, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  desert_eagle: { scale: 4.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  glock_17: { scale: 4.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  m4a4_thunder: { scale: 2.5, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  sniper_elite: { scale: 2.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  usp_shadow: { scale: 4.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  awp_black: { scale: 2.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  cz100: { scale: 4.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  cheytac: { scale: 2.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  t77: { scale: 4.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-  colt_m1911: { scale: 4.0, position: [0, -0.1, 0], rotation: [0, 0, 0] },
-};
-
-// ---- GLB Loader Component ----
-const GLBWeapon: React.FC<{ weaponId: string; scale: number }> = ({ weaponId, scale }) => {
+const GLBWeapon: React.FC<{ weaponId: string }> = ({ weaponId }) => {
   const path = WEAPON_GLB_MAP[weaponId];
   const { scene } = useGLTF(path);
-  const config = WEAPON_GLB_CONFIG[weaponId] ?? { scale: 2.5, position: [0, 0, 0] as [number, number, number], rotation: [0, 0, 0] as [number, number, number] };
 
-  const cloned = React.useMemo(() => scene.clone(), [scene]);
+  const cloned = React.useMemo(() => {
+    const c = scene.clone();
+    c.traverse((child: any) => {
+      if (child.isMesh && child.material) {
+        child.material.side = THREE.DoubleSide;
+        child.material.needsUpdate = true;
+      }
+    });
+    return c;
+  }, [scene]);
 
   return (
-    <primitive
-      object={cloned}
-      scale={config.scale * scale}
-      position={config.position}
-      rotation={config.rotation}
-    />
+    <Center>
+      <primitive object={cloned} />
+    </Center>
   );
 };
 
-// Simple fallback
 const FallbackWeapon: React.FC<{ scale: number }> = ({ scale }) => (
   <group scale={scale}>
-    <mesh position={[0, 0, 0]}>
+    <mesh>
       <boxGeometry args={[1.2, 0.2, 0.15]} />
       <meshStandardMaterial color="#333" roughness={0.3} metalness={0.8} />
-    </mesh>
-    <mesh position={[0.8, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-      <cylinderGeometry args={[0.03, 0.04, 0.5, 8]} />
-      <meshStandardMaterial color="#1a1a1a" roughness={0.2} metalness={0.95} />
     </mesh>
   </group>
 );
 
-// Error boundary
 class GLBErrorBoundary extends React.Component<
   { children: React.ReactNode; fallback: React.ReactNode },
   { hasError: boolean }
@@ -103,11 +81,11 @@ const WeaponModel3D: React.FC<WeaponModelProps> = ({ weaponId, rotate = true, sc
   const fallback = <FallbackWeapon scale={scale} />;
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} scale={scale}>
       {hasGLB ? (
         <GLBErrorBoundary fallback={fallback}>
           <Suspense fallback={fallback}>
-            <GLBWeapon weaponId={weaponId} scale={scale} />
+            <GLBWeapon weaponId={weaponId} />
           </Suspense>
         </GLBErrorBoundary>
       ) : fallback}
@@ -117,7 +95,6 @@ const WeaponModel3D: React.FC<WeaponModelProps> = ({ weaponId, rotate = true, sc
 
 export default WeaponModel3D;
 
-// Preload GLB files
 Object.values(WEAPON_GLB_MAP).forEach(path => {
   try { useGLTF.preload(path); } catch {}
 });

@@ -1,10 +1,10 @@
 // ============================================
-// 3D Model Viewer Card — Canvas wrapper for store items
+// 3D Model Viewer Card — Canvas wrapper with Bounds for auto-fit
 // ============================================
 
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Environment, Bounds } from '@react-three/drei';
 
 interface ModelViewerProps {
   children: React.ReactNode;
@@ -20,13 +20,16 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   bgColor = 'transparent',
 }) => (
   <div className={`${height} w-full rounded-xl overflow-hidden`} style={{ background: bgColor }}>
-    <Canvas camera={{ position: [0, 0.3, 2.5], fov: 35 }} dpr={[1, 1.5]}>
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[3, 4, 5]} intensity={1.2} />
-      <directionalLight position={[-2, 2, -3]} intensity={0.4} color="#4488ff" />
-      <pointLight position={[0, -1, 2]} intensity={0.3} color="#ff4444" />
+    <Canvas camera={{ position: [0, 0.5, 3], fov: 45 }} dpr={[1, 1.5]}>
+      <ambientLight intensity={2.0} />
+      <directionalLight position={[5, 5, 5]} intensity={2.5} />
+      <directionalLight position={[-5, 3, -3]} intensity={1.5} color="#6688ff" />
+      <directionalLight position={[0, -3, 5]} intensity={1.0} color="#ff8866" />
+      <Environment preset="studio" />
       <Suspense fallback={null}>
-        {children}
+        <Bounds fit clip observe margin={1.4}>
+          {children}
+        </Bounds>
       </Suspense>
       {orbitControls && <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} />}
     </Canvas>

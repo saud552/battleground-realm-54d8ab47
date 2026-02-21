@@ -1,10 +1,10 @@
 // ============================================
-// 3D Character Models — GLB with Procedural Fallback
+// 3D Character Models — GLB with auto-centering
 // ============================================
 
 import React, { useRef, Suspense } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Center, Bounds } from '@react-three/drei';
 import * as THREE from 'three';
 import type { CharacterDef } from '@/lib/gameRegistry';
 
@@ -15,7 +15,6 @@ interface CharacterModelProps {
   skinLevel?: number;
 }
 
-// GLB file mapping — all characters
 const CHARACTER_GLB_MAP: Record<string, string> = {
   ghost_riley: '/Models/Characters/snake_eyes__fortnite_item_shop_skin.glb',
   nova_prime: '/Models/Characters/fortnite_oblivion_skin.glb',
@@ -26,33 +25,28 @@ const CHARACTER_GLB_MAP: Record<string, string> = {
   glow_phantom: '/Models/Characters/glow__fortnite_outfit.glb',
 };
 
-const CHARACTER_GLB_CONFIG: Record<string, { scale: number; position: [number, number, number] }> = {
-  ghost_riley: { scale: 1.2, position: [0, -1.0, 0] },
-  nova_prime: { scale: 1.2, position: [0, -1.0, 0] },
-  viper_snake: { scale: 1.2, position: [0, -1.0, 0] },
-  shadow_exe: { scale: 1.2, position: [0, -1.0, 0] },
-  midas_gold: { scale: 1.2, position: [0, -1.0, 0] },
-  marigold: { scale: 1.2, position: [0, -1.0, 0] },
-  glow_phantom: { scale: 1.2, position: [0, -1.0, 0] },
-};
-
-// ---- GLB Loader ----
-const GLBCharacter: React.FC<{ characterId: string; scale: number }> = ({ characterId, scale }) => {
+const GLBCharacter: React.FC<{ characterId: string }> = ({ characterId }) => {
   const path = CHARACTER_GLB_MAP[characterId];
   const { scene } = useGLTF(path);
-  const config = CHARACTER_GLB_CONFIG[characterId] ?? { scale: 1.2, position: [0, -1.0, 0] as [number, number, number] };
-  const cloned = React.useMemo(() => scene.clone(), [scene]);
+
+  const cloned = React.useMemo(() => {
+    const c = scene.clone();
+    c.traverse((child: any) => {
+      if (child.isMesh && child.material) {
+        child.material.side = THREE.DoubleSide;
+        child.material.needsUpdate = true;
+      }
+    });
+    return c;
+  }, [scene]);
 
   return (
-    <primitive
-      object={cloned}
-      scale={config.scale * scale}
-      position={config.position}
-    />
+    <Center>
+      <primitive object={cloned} />
+    </Center>
   );
 };
 
-// ---- Simple Fallback (loading placeholder) ----
 const FallbackModel: React.FC<{ colors: CharacterDef['colors'] }> = ({ colors }) => (
   <group>
     <mesh position={[0, 0.5, 0]}>
@@ -66,7 +60,6 @@ const FallbackModel: React.FC<{ colors: CharacterDef['colors'] }> = ({ colors })
   </group>
 );
 
-// Error boundary
 class GLBErrorBoundary extends React.Component<
   { children: React.ReactNode; fallback: React.ReactNode },
   { hasError: boolean }
@@ -76,7 +69,7 @@ class GLBErrorBoundary extends React.Component<
   render() { return this.state.hasError ? this.props.fallback : this.props.children; }
 }
 
-const CharacterModel3D: React.FC<CharacterModelProps> = ({ character, rotate = true, scale = 1, skinLevel = 1 }) => {
+const CharacterModel3D: React.FC<CharacterModelProps> = ({ character, rotate = true, scale = 1 }) => {
   const groupRef = useRef<THREE.Group>(null);
   useFrame((_, delta) => {
     if (rotate && groupRef.current) groupRef.current.rotation.y += delta * 0.4;
@@ -90,7 +83,7 @@ const CharacterModel3D: React.FC<CharacterModelProps> = ({ character, rotate = t
       {hasGLB ? (
         <GLBErrorBoundary fallback={fallback}>
           <Suspense fallback={fallback}>
-            <GLBCharacter characterId={character.id} scale={1} />
+            <GLBCharacter characterId={character.id} />
           </Suspense>
         </GLBErrorBoundary>
       ) : fallback}
@@ -100,7 +93,6 @@ const CharacterModel3D: React.FC<CharacterModelProps> = ({ character, rotate = t
 
 export default CharacterModel3D;
 
-// Preload
 Object.values(CHARACTER_GLB_MAP).forEach(path => {
   try { useGLTF.preload(path); } catch {}
 });
